@@ -23,13 +23,20 @@ jobs:
         python -m pip install --upgrade pip
         pip install build twine
 
+    - name: Clean previous builds
+      run: rm -rf dist/ build/ *.egg-info
+
+    - name: Check version in pyproject.toml
+      run: grep version pyproject.toml
+
     - name: Build the package
-      run: |
-        python -m build
+      run: python -m build
+
+    - name: List built files
+      run: ls -lh dist
 
     - name: Upload to PyPI
       env:
         TWINE_USERNAME: __token__
         TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
-      run: |
-        twine upload dist/* --verbose
+      run: twine upload dist/* --verbose
