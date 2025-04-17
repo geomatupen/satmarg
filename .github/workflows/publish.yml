@@ -1,0 +1,35 @@
+name: Publish Python Package to PyPI
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'  # This triggers the action on version tags like v0.1.0, v1.2.3, etc.
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8  # Change to your desired Python version
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install setuptools wheel twine
+
+    - name: Build the package
+      run: python setup.py sdist bdist_wheel  # Adjust if using pyproject.toml
+
+    - name: Upload package to PyPI
+      env:
+        PYPI_USERNAME: __token__
+        PYPI_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+      run: |
+        pip install twine
+        twine upload dist/* --username $PYPI_USERNAME --password $PYPI_PASSWORD
