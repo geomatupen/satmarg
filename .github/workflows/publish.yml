@@ -1,9 +1,9 @@
-name: Publish Python Package to PyPI
+name: Build and Upload Package to PyPI
 
 on:
   push:
     tags:
-      - 'v*.*.*'  # This triggers the action on version tags like v0.1.0, v1.2.3, etc.
+      - 'v*.*.*'
 
 jobs:
   build:
@@ -16,20 +16,20 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
-        python-version: 3.8  # Change to your desired Python version
+        python-version: '3.9'
 
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install setuptools wheel twine
+        pip install build twine
 
     - name: Build the package
-      run: python setup.py sdist bdist_wheel  # Adjust if using pyproject.toml
-
-    - name: Upload package to PyPI
-      env:
-        PYPI_USERNAME: __token__
-        PYPI_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
       run: |
-        pip install twine
-        twine upload dist/* --username $PYPI_USERNAME --password $PYPI_PASSWORD
+        python -m build
+
+    - name: Upload to PyPI
+      env:
+        TWINE_USERNAME: __token__
+        TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
+      run: |
+        twine upload dist/*
