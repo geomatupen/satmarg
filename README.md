@@ -25,12 +25,6 @@ Clone the repository:
 git clone https://github.com/yourusername/yourrepository.git
 ```
 
-Install the required dependencies:
-
-```bash
-pip install -r requirements.txt
-```
-
 ## Usage
 
 1. **SatMarg (Orbit Calculation)**:
