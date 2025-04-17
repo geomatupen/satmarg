@@ -1,21 +1,19 @@
 [build-system]
-requires = ["setuptools", "wheel"]
+requires = ["setuptools>=61", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "satoverpass"
+name = "satmarg"
 version = "0.1.0"
-description = "Predict satellite overpass times using TLE data"
-authors = [{ name="Upendra Oli", email="upendra.oli59@gmail.com" }]
-readme = "README.md"
-license = { text = "MIT" }
-requires-python = ">=3.7"
+description = "Predict satellite overpasses based on TLE and user location"
+authors = [{ name = "Your Name", email = "your@email.com" }]
+license = "MIT"
 dependencies = [
     "skyfield",
-    "numpy",
     "pandas",
+    "numpy",
     "requests"
 ]
 
-[project.urls]
-Homepage = "https://github.com/yourusername/satoverpass"
+[tool.setuptools]
+packages = ["satmarg"]
