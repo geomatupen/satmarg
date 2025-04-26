@@ -75,7 +75,8 @@ You can control the output format using the output_format parameter. Available o
 'csv': Saves the results directly to a CSV file (you can also specify a csv_filename).
 
 ## Example Output (json)
-```json [
+```
+json [
   {
     "date":"2025-05-04 16:31:35",
     "Satellite":"SENTINEL-2A",
@@ -103,7 +104,8 @@ You can control the output format using the output_format parameter. Available o
     "Sat. Elev. (deg)":89.1402328607,
     "Range (km)":791.6648527357
   }
-]```
+]
+```
 
 ## Example Output (Table)
 
