@@ -2,4 +2,4 @@
 Outputs/
 satmarg.egg-info/
 dist/
-test.ipynb
+build.ipynb

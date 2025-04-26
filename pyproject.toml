@@ -4,9 +4,9 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "satmarg"
-version = "0.1.6"
+version = "0.1.7"
 description = "Predict satellite overpasses based on TLE and user location"
-authors = [{ name = "Your Name", email = "your@email.com" }]
+authors = [{ name = "Upendra Oli", email = "upendra.oli59@gmail.com" }]
 license = "MIT"
 dependencies = [
     "skyfield",
