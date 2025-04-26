@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 import numpy as np
 import pandas as pd
 import requests
+from datetime import datetime, timedelta
 
 # satmarg/core.py
 
@@ -122,7 +123,23 @@ def find_overpasses(lat, lon, start_date, end_date, satellite, satellites, step_
     return results
 
 
-from datetime import datetime, timedelta
+def format_output(df, output_format, csv_filename=None):
+    output_format = output_format.lower()
+
+    if output_format == 'table':
+        return df
+    elif output_format == 'json':
+        return df.to_json(orient='records', indent=2)
+    elif output_format == 'csv':
+        if csv_filename is None:
+            csv_filename = 'overpasses.csv'
+        df.to_csv(csv_filename, index=False)
+        print(f"CSV file saved as: {csv_filename}")
+        return csv_filename
+    else:
+        raise ValueError("Invalid output_format. Choose 'table', 'json', or 'csv'.")
+
+
 
 def get_precise_overpasses(
     lat,
@@ -131,7 +148,8 @@ def get_precise_overpasses(
     end_date=None,
     satellites=None,
     step_seconds=1, 
-    max_angle_deg=0.5
+    max_angle_deg=0.5,
+    output_format='json',
 ):
     all_satellites = load_satellites()
     all_overpasses = []
@@ -162,7 +180,8 @@ def get_precise_overpasses(
         else:
             print(f"Satellite '{sat}' not found in loaded satellites.")
 
-    return pd.DataFrame(all_overpasses)
+    df = pd.DataFrame(all_overpasses)
+    return format_output(df, output_format)
 
 
 
@@ -173,8 +192,10 @@ def test_get_precise_overpasses():
         lon=85.3240,
         start_date="2025-04-26",
         end_date="2025-05-27",
-        satellites = "SENTINEL-2A, SENTINEL-2B, SENTINEL-2C"
+        satellites = "SENTINEL-2A",
+        output_format='json',    
     )
     print(df)
 
-# test_get_precise_overpasses()
+# test_get_precise_overpasses() 
+

@@ -43,6 +43,7 @@ df = get_precise_overpasses(
     satellites="SENTINEL-2A, SENTINEL-2B, SENTINEL-2C",
     step_seconds=10,   # custom processing speed
     max_angle_deg=1.0  # custom angle
+    output_format='json', 
 )
 print(df)
 ```
@@ -60,11 +61,51 @@ print(df)
 | `max_angle_deg`   | Maximum distance (in degrees) from overhead to detect an overpass.           | 0.5              |
 
 Notes:  
-- `step_seconds = 1` for slow (high precision),  
+- `step_seconds = 1` for slow (high precision) and requires more processing power reduce it to lower values if it is taking too long,  
 - `step_seconds = 10` for medium,  
 - `step_seconds = 20` for fast (less precision).
 
-## Example Output
+## Output
+You can control the output format using the output_format parameter. Available options are:
+
+'json' (default): Returns the overpass results as a JSON string.
+
+'table': Returns the results as a pandas DataFrame.
+
+'csv': Saves the results directly to a CSV file (you can also specify a csv_filename).
+
+## Example Output (json)
+```json [
+  {
+    "date":"2025-05-04 16:31:35",
+    "Satellite":"SENTINEL-2A",
+    "Lat (DEG)":27.6669294714,
+    "Lon (DEG)":85.1651872363,
+    "Sat. Azi. (deg)":250.4505871228,
+    "Sat. Elev. (deg)":88.6478414389,
+    "Range (km)":792.0432268716
+  },
+  {
+    "date":"2025-05-14 16:31:30",
+    "Satellite":"SENTINEL-2A",
+    "Lat (DEG)":27.6775444246,
+    "Lon (DEG)":85.1847272958,
+    "Sat. Azi. (deg)":252.283651294,
+    "Sat. Elev. (deg)":88.82670104,
+    "Range (km)":791.7672395546
+  },
+  {
+    "date":"2025-05-24 16:31:21",
+    "Satellite":"SENTINEL-2A",
+    "Lat (DEG)":27.6959514525,
+    "Lon (DEG)":85.2195412997,
+    "Sat. Azi. (deg)":257.1430638378,
+    "Sat. Elev. (deg)":89.1402328607,
+    "Range (km)":791.6648527357
+  }
+]```
+
+## Example Output (Table)
 
 | date                | Satellite    | Lat (DEG) | Lon (DEG) | Sat. Azi. (deg) | Sat. Elev. (deg) | Range (km) |
 |---------------------|--------------|-----------|-----------|-----------------|-----------------|------------|
