@@ -1,6 +1,6 @@
 # SatMarg - Satellite Overpass Predictor
 
-**SatMarg** = Satellite + Mārga (Sanskrit for "path" or "orbit")  
+**SatMarg** = Satellite + Marg (Sanskrit for "path" or "orbit")  
 Predict satellite overpass times for any location easily and precisely.
 
 ## About SatMarg
@@ -126,7 +126,7 @@ json [
 
 ## License
 
-MIT License
+GNU GENERAL PUBLIC LICENSE
 
 ## Acknowledgements
 
