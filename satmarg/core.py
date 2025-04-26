@@ -1,3 +1,4 @@
+# %load core.py
 # satoverpass/core.py
 
 from skyfield.api import load, EarthSatellite, Topos
@@ -75,12 +76,13 @@ def load_satellites():
     sats = {}
     for name, tle in tle_sources.items():
         line1, line2 = tle
-        satellites[name] = EarthSatellite(line1, line2, name, ts)
-        print(f"Loaded TLE data for {name}")
+        sats[name] = EarthSatellite(line1, line2, name, ts)
+        # print(f"Loaded TLE data for {name}")
+    print("Loaded TLE data")
     return sats
 
 
-def find_overpasses(lat, lon, start_date, end_date, satellite, satellites):
+def find_overpasses(lat, lon, start_date, end_date, satellite, satellites, step_seconds, max_angle_deg):
     if satellite not in satellites:
         return []
 
@@ -93,7 +95,7 @@ def find_overpasses(lat, lon, start_date, end_date, satellite, satellites):
     dt = start_dt
 
     while dt <= end_dt:
-        t = ts.utc(dt.year, dt.month, dt.day, 0, 0, np.arange(0, 86400, 1))
+        t = ts.utc(dt.year, dt.month, dt.day, 0, 0, np.arange(0, 86400, step_seconds)) #default 1 second
         subpoint = sat.at(t).subpoint()
         latitudes = subpoint.latitude.degrees
         longitudes = subpoint.longitude.degrees
@@ -104,7 +106,7 @@ def find_overpasses(lat, lon, start_date, end_date, satellite, satellites):
         topocentric = (sat - observer).at(t[min_index])
         alt, az, distance = topocentric.altaz()
 
-        if distances[min_index] < 0.5:
+        if distances[min_index] < max_angle_deg: #default 0.5
             results.append({
                 'date': closest_time.strftime('%Y-%m-%d %H:%M:%S'),
                 'Satellite': satellite,
@@ -120,11 +122,59 @@ def find_overpasses(lat, lon, start_date, end_date, satellite, satellites):
     return results
 
 
-def get_precise_overpasses(lat, lon, start_date, end_date):
-    satellites = load_satellites()
+from datetime import datetime, timedelta
+
+def get_precise_overpasses(
+    lat,
+    lon,
+    start_date=None,
+    end_date=None,
+    satellites=None,
+    step_seconds=1, 
+    max_angle_deg=0.5
+):
+    all_satellites = load_satellites()
     all_overpasses = []
-    for name in satellites:
-        overpasses = find_overpasses(lat, lon, start_date, end_date, name, satellites)
-        all_overpasses.extend(overpasses)
+
+    # Set default dates if not provided
+    if start_date is None:
+        today = datetime.utcnow().date()
+        start_date = today.strftime('%Y-%m-%d')
+    if end_date is None:
+        one_month_later = datetime.utcnow().date() + timedelta(days=30)
+        end_date = one_month_later.strftime('%Y-%m-%d')
+
+    #if latitude and longitude is not provided return message
+    if lat is None or lon is None:
+        raise ValueError("Latitude ('lat') and Longitude ('lon') parameters must be provided.")
+
+
+    # Set default satellites if not provided
+    if satellites is None:
+        satellites = ["SENTINEL-2A", "SENTINEL-2B"]
+    else:
+        satellites = [s.strip() for s in satellites.split(',')]
+
+    for sat in satellites:
+        if sat in all_satellites:
+            overpasses = find_overpasses(lat, lon, start_date, end_date, sat, all_satellites, step_seconds, max_angle_deg)
+            all_overpasses.extend(overpasses)
+        else:
+            print(f"Satellite '{sat}' not found in loaded satellites.")
 
     return pd.DataFrame(all_overpasses)
+
+
+
+
+def test_get_precise_overpasses():
+    df = get_precise_overpasses(
+        lat=27.7172,   # Kathmandu
+        lon=85.3240,
+        start_date="2025-04-26",
+        end_date="2025-05-27",
+        satellites = "SENTINEL-2A, SENTINEL-2B, SENTINEL-2C"
+    )
+    print(df)
+
+# test_get_precise_overpasses()
