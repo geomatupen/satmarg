@@ -6,82 +6,86 @@ from datetime import datetime, timedelta
 import numpy as np
 import pandas as pd
 import requests
-from datetime import datetime, timedelta
+import os
+import json
 
-# satmarg/core.py
-
-import requests
-
-# Simple cache: stores URL -> TLE text
+# Constants and global cache
 _fetched_cache = {}
+ts = load.timescale()
+TLE_CACHE_FILE = "tle_cache.json"
 
-import requests
+# TLE data sources
+satellites_tle_source = 'https://celestrak.org/NORAD/elements/resource.txt'
+stations_tle_source = 'https://celestrak.org/NORAD/elements/stations.txt'
 
-# Simple cache: stores URL -> TLE text
-_fetched_cache = {}
+# Custom/manual TLE for missing satellites
+custom_tle_sources = {
+    "SENTINEL-2C": [
+        "1 60989U 24157A   25090.79518797  .00000292  00000-0  12798-3 0  9993",
+        "2 60989  98.5659 167.0180 0001050  95.0731 265.0572 14.30814009 29727"
+    ]
+}
+
+def load_tle_cache():
+    if os.path.exists(TLE_CACHE_FILE):
+        with open(TLE_CACHE_FILE, 'r') as f:
+            return json.load(f)
+    return {}
+
+def save_tle_cache(cache):
+    with open(TLE_CACHE_FILE, 'w') as f:
+        json.dump(cache, f, indent=2)
+
+tle_cache = load_tle_cache()
 
 def fetch_tle_text(name, url):
-    """Fetches TLE data from a given URL and returns the TLE lines for the given satellite name.
-    Avoids re-fetching if URL content hasn't changed."""
-
-    if url in _fetched_cache:
-        all_tle_text = _fetched_cache[url]
-    else:
+    if url not in _fetched_cache:
         try:
             response = requests.get(url, timeout=10)
             response.raise_for_status()
-            all_tle_text = response.text
-
-            # Only add to cache after successful fetch
-            _fetched_cache[url] = all_tle_text
-
+            _fetched_cache[url] = response.text
         except requests.RequestException as e:
-            print(f"Error fetching TLE data from {url}: {e}")
+            print(f"Error fetching TLE from {url}: {e}")
             return ""
 
-    tle_lines = all_tle_text.splitlines()
+    tle_lines = _fetched_cache[url].splitlines()
     for i in range(len(tle_lines) - 2):
-        if name in tle_lines[i]:  # Look for the satellite name
+        if name.strip().upper() == tle_lines[i].strip().upper():
             return [tle_lines[i+1], tle_lines[i+2]]
-
-    print(f"Satellite name '{name}' not found in TLE data from {url}")
     return ""
 
-
-
-# Define TLE sources
-satellites_tle_source = 'https://celestrak.org/NORAD/elements/resource.txt'
-stations_tle_source = 'https://celestrak.org/NORAD/elements/stations.txt'
-# Manually provided TLE for SENTINEL-2C
-sentinel_2c_tle = [  
-    "1 60989U 24157A   25090.79518797  .00000292  00000-0  12798-3 0  9993",
-    "2 60989  98.5659 167.0180 0001050  95.0731 265.0572 14.30814009 29727"
-]
-
-tle_sources = {
-    # name: fetch_tle_text(name, common_tle_source) for name in ['LANDSAT 8'],
-    'LANDSAT 8': fetch_tle_text('LANDSAT 8', satellites_tle_source),
-    'LANDSAT 9': fetch_tle_text('LANDSAT 9', satellites_tle_source),
-    'SENTINEL-2A': fetch_tle_text('SENTINEL-2A', satellites_tle_source),  
-    'SENTINEL-2B': fetch_tle_text('SENTINEL-2B', satellites_tle_source),
-    'SENTINEL-2C': sentinel_2c_tle, # Manually provided TLE as it was not available on the link
-    'SENTINEL-3A': fetch_tle_text('SENTINEL-3A', satellites_tle_source),
-    'SENTINEL-3B': fetch_tle_text('SENTINEL-3B', satellites_tle_source),  
-    'ISS (ZARYA)': fetch_tle_text('ISS (ZARYA)', stations_tle_source),
-}
-
-ts = load.timescale()
-
-
-def load_satellites():
+def load_satellites(satellite_names):
     sats = {}
-    for name, tle in tle_sources.items():
-        line1, line2 = tle
-        sats[name] = EarthSatellite(line1, line2, name, ts)
-        # print(f"Loaded TLE data for {name}")
-    print("Loaded TLE data")
-    return sats
 
+    if len(satellite_names) > 5:
+        print(f" Too many satellites requested ({len(satellite_names)}). Limiting to first 5.")
+        satellite_names = satellite_names[:5]
+
+    for name in satellite_names:
+        tle = None
+
+        if name in tle_cache:
+            tle = tle_cache[name]
+        else:
+            tle = fetch_tle_text(name, satellites_tle_source)
+            if not tle:
+                tle = fetch_tle_text(name, stations_tle_source)
+            if not tle and name in custom_tle_sources:
+                tle = custom_tle_sources[name]
+            if tle:
+                tle_cache[name] = tle
+
+        if tle:
+            try:
+                line1, line2 = tle
+                sats[name] = EarthSatellite(line1, line2, name, ts)
+            except Exception as e:
+                print(f"Could not load TLE for {name}: {e}")
+        else:
+            print(f"No TLE found for satellite: {name}")
+
+    save_tle_cache(tle_cache)
+    return sats
 
 def find_overpasses(lat, lon, start_date, end_date, satellite, satellites, step_seconds, max_angle_deg):
     if satellite not in satellites:
@@ -96,7 +100,7 @@ def find_overpasses(lat, lon, start_date, end_date, satellite, satellites, step_
     dt = start_dt
 
     while dt <= end_dt:
-        t = ts.utc(dt.year, dt.month, dt.day, 0, 0, np.arange(0, 86400, step_seconds)) #default 1 second
+        t = ts.utc(dt.year, dt.month, dt.day, 0, 0, np.arange(0, 86400, step_seconds))
         subpoint = sat.at(t).subpoint()
         latitudes = subpoint.latitude.degrees
         longitudes = subpoint.longitude.degrees
@@ -107,7 +111,7 @@ def find_overpasses(lat, lon, start_date, end_date, satellite, satellites, step_
         topocentric = (sat - observer).at(t[min_index])
         alt, az, distance = topocentric.altaz()
 
-        if distances[min_index] < max_angle_deg: #default 0.5
+        if distances[min_index] < max_angle_deg:
             results.append({
                 'date': closest_time.strftime('%Y-%m-%d %H:%M:%S'),
                 'Satellite': satellite,
@@ -122,10 +126,8 @@ def find_overpasses(lat, lon, start_date, end_date, satellite, satellites, step_
 
     return results
 
-
 def format_output(df, output_format, csv_filename=None):
     output_format = output_format.lower()
-
     if output_format == 'table':
         return df
     elif output_format == 'json':
@@ -139,50 +141,38 @@ def format_output(df, output_format, csv_filename=None):
     else:
         raise ValueError("Invalid output_format. Choose 'table', 'json', or 'csv'.")
 
-
-
 def get_precise_overpasses(
     lat,
     lon,
     start_date=None,
     end_date=None,
     satellites=None,
-    step_seconds=1, 
+    step_seconds=1,
     max_angle_deg=0.5,
-    output_format='json',
+    output_format='json'
 ):
-    all_satellites = load_satellites()
+    if start_date is None:
+        start_date = datetime.utcnow().strftime('%Y-%m-%d')
+    if end_date is None:
+        end_date = (datetime.utcnow() + timedelta(days=30)).strftime('%Y-%m-%d')
+
+    if lat is None or lon is None:
+        raise ValueError("Latitude and Longitude must be provided.")
+
+    if satellites is None:
+        satellite_names = ["SENTINEL-2A", "SENTINEL-2B", "LANDSAT 8", "LANDSAT 9"]
+    else:
+        satellite_names = [s.strip() for s in satellites.split(',')]
+
+    all_satellites = load_satellites(satellite_names)
     all_overpasses = []
 
-    # Set default dates if not provided
-    if start_date is None:
-        today = datetime.utcnow().date()
-        start_date = today.strftime('%Y-%m-%d')
-    if end_date is None:
-        one_month_later = datetime.utcnow().date() + timedelta(days=30)
-        end_date = one_month_later.strftime('%Y-%m-%d')
-
-    #if latitude and longitude is not provided return message
-    if lat is None or lon is None:
-        raise ValueError("Latitude ('lat') and Longitude ('lon') parameters must be provided.")
-
-
-    # Set default satellites if not provided
-    if satellites is None:
-        satellites = ["SENTINEL-2A", "SENTINEL-2B"]
-    else:
-        satellites = [s.strip() for s in satellites.split(',')]
-
-    for sat in satellites:
-        if sat in all_satellites:
-            overpasses = find_overpasses(lat, lon, start_date, end_date, sat, all_satellites, step_seconds, max_angle_deg)
-            all_overpasses.extend(overpasses)
-        else:
-            print(f"Satellite '{sat}' not found in loaded satellites.")
+    for sat in all_satellites:
+        overpasses = find_overpasses(lat, lon, start_date, end_date, sat, all_satellites, step_seconds, max_angle_deg)
+        all_overpasses.extend(overpasses)
 
     df = pd.DataFrame(all_overpasses)
     return format_output(df, output_format)
-
 
 
 

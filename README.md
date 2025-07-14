@@ -5,7 +5,7 @@ Predict satellite overpass times for any location easily and precisely.
 
 ## About SatMarg
 
-SatMarg is a lightweight Python package designed to calculate satellite overpass predictions for specific locations and time periods. It uses real-time Two-Line Element (TLE) data to provide precise estimates of when satellites such as SENTINEL-2A, SENTINEL-2B, LANDSAT 8, and others will pass closest to a given latitude and longitude. SatMarg is built to be fast, simple, and customizable, allowing users to adjust processing speed and proximity angle according to their needs. It is ideal for applications such as satellite image planning, ground station scheduling, and general orbital analysis.
+SatMarg is an open source Python package designed to calculate satellite overpass predictions for specific locations and time periods. It uses real-time Two-Line Element (TLE) data to provide precise estimates of when satellites such as SENTINEL-2A, SENTINEL-2B, LANDSAT 8, and others will pass closest to a given latitude and longitude. SatMarg is built to be fast, simple, and customizable, allowing users to adjust processing speed and proximity angle according to their needs. It is ideal for applications such as satellite image planning, ground station scheduling, and general orbital analysis.
 
 ## Features
 
@@ -119,7 +119,7 @@ json [
 - LANDSAT 9
 - SENTINEL-2A
 - SENTINEL-2B
-- SENTINEL-2C (manual TLE)
+- SENTINEL-2C
 - SENTINEL-3A
 - SENTINEL-3B
 - ISS (ZARYA)
