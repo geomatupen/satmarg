@@ -11,7 +11,7 @@ SatMarg is an open source Python package designed to calculate satellite overpas
 
 - Fetches real-time TLE data automatically from Celestrak.
 - Predicts precise satellite overpass dates and times for a given latitude and longitude.
-- Supports Sentinel-2A, Sentinel-2B, Sentinel-2C, Landsat 8/9, ISS, and more.
+- Supports Sentinel-2A, Sentinel-2B, Sentinel-2C, Landsat 8/9, ISS, and more with TLE data available on Celestrak https://celestrak.org/NORAD/elements/resource.txt, https://celestrak.org/NORAD/elements/stations.txt
 - Allows control of processing speed (slow, medium, fast) to balance between precision and performance.
 - Allows customization of proximity angle detection (default is 0.5 degrees).
 - Lightweight, fast, and easy to use.
@@ -56,7 +56,7 @@ print(df)
 | `lon`             | Longitude in degrees.                                                       | Required         |
 | `start_date`      | Start date in 'YYYY-MM-DD' format.                                           | Today (UTC)      |
 | `end_date`        | End date in 'YYYY-MM-DD' format.                                             | 30 days later    |
-| `satellites`      | Comma-separated list of satellites (example: "SENTINEL-2A, SENTINEL-2B").    | SENTINEL-2A, SENTINEL-2B |
+| `satellites`      | Comma-separated list of satellites (example: "SENTINEL-2A, SENTINEL-2B") - limit 5 satellites.    | SENTINEL-2A, SENTINEL-2B |
 | `step_seconds`    | Step interval for orbit simulation in seconds. Higher = faster but less precise. | 1               |
 | `max_angle_deg`   | Maximum distance (in degrees) from overhead to detect an overpass.           | 0.5              |
 
@@ -123,6 +123,7 @@ json [
 - SENTINEL-3A
 - SENTINEL-3B
 - ISS (ZARYA)
+- and more available on https://celestrak.org/NORAD/elements/resource.txt, https://celestrak.org/NORAD/elements/stations.txt
 
 ## License
 
