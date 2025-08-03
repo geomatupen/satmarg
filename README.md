@@ -56,7 +56,7 @@ print(df)
 | `lon`             | Longitude in degrees.                                                       | Required         |
 | `start_date`      | Start date in 'YYYY-MM-DD' format.                                           | Today (UTC)      |
 | `end_date`        | End date in 'YYYY-MM-DD' format.                                             | 30 days later    |
-| `satellites`      | Comma-separated list of satellites (example: "SENTINEL-2A, SENTINEL-2B") - limit 5 satellites.    | SENTINEL-2A, SENTINEL-2B |
+| `satellites`      | Comma-separated list of satellites (example: "SENTINEL-2A, SENTINEL-2B") - limit 5 satellites. Check supported satellites below.    | SENTINEL-2A, SENTINEL-2B |
 | `step_seconds`    | Step interval for orbit simulation in seconds. Higher = faster but less precise. | 1               |
 | `max_angle_deg`   | Maximum distance (in degrees) from overhead to detect an overpass.           | 0.5              |
 
