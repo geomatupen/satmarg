@@ -87,6 +87,7 @@ def load_satellites(satellite_names):
     save_tle_cache(tle_cache)
     return sats
 
+
 def find_overpasses(lat, lon, start_date, end_date, satellite, satellites, step_seconds, max_angle_deg):
     if satellite not in satellites:
         return []
@@ -141,6 +142,15 @@ def format_output(df, output_format, csv_filename=None):
     else:
         raise ValueError("Invalid output_format. Choose 'table', 'json', or 'csv'.")
 
+SAFE_NADIR_DEG = {
+    "LANDSAT 8": 0.7,
+    "LANDSAT 9": 0.7,
+    "SENTINEL-2A": 1.0,
+    "SENTINEL-2B": 1.0,
+    "SENTINEL-3A": 5.0,
+    "SENTINEL-3B": 5.0,
+}
+
 def get_precise_overpasses(
     lat,
     lon,
@@ -148,7 +158,7 @@ def get_precise_overpasses(
     end_date=None,
     satellites=None,
     step_seconds=1,
-    max_angle_deg=0.5,
+    max_angle_deg=None,
     output_format='json'
 ):
     if start_date is None:
@@ -168,6 +178,12 @@ def get_precise_overpasses(
     all_overpasses = []
 
     for sat in all_satellites:
+        if max_angle_deg is None:
+            try:
+                max_angle_deg = SAFE_NADIR_DEG.get(sat.upper(), 0.7); #if angle not passed use default degrees available
+                print(f"satellite: {sat} and using max angle: {max_angle_deg}")
+            except Exception:
+                pass            
         overpasses = find_overpasses(lat, lon, start_date, end_date, sat, all_satellites, step_seconds, max_angle_deg)
         all_overpasses.extend(overpasses)
 
