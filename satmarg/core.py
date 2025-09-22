@@ -142,6 +142,7 @@ def format_output(df, output_format, csv_filename=None):
     else:
         raise ValueError("Invalid output_format. Choose 'table', 'json', or 'csv'.")
 
+# hard coded values based on the swath. They are probably the best values, but can be changed based on the need. 
 SAFE_NADIR_DEG = {
     "LANDSAT 8": 0.7,
     "LANDSAT 9": 0.7,
@@ -180,11 +181,13 @@ def get_precise_overpasses(
     for sat in all_satellites:
         if max_angle_deg is None:
             try:
-                max_angle_deg = SAFE_NADIR_DEG.get(sat.upper(), 0.7); #if angle not passed use default degrees available
-                print(f"satellite: {sat} and using max angle: {max_angle_deg}")
+                final_max_angle_deg = SAFE_NADIR_DEG.get(sat.upper(), 0.7); #if angle not passed use default degrees available
+                # print(f"satellite: {sat} and using max angle: {final_max_angle_deg}")
             except Exception:
-                pass            
-        overpasses = find_overpasses(lat, lon, start_date, end_date, sat, all_satellites, step_seconds, max_angle_deg)
+                pass
+        else:
+            final_max_angle_deg = max_angle_deg
+        overpasses = find_overpasses(lat, lon, start_date, end_date, sat, all_satellites, step_seconds, final_max_angle_deg)
         all_overpasses.extend(overpasses)
 
     df = pd.DataFrame(all_overpasses)
@@ -198,7 +201,7 @@ def test_get_precise_overpasses():
         lon=85.3240,
         start_date="2025-04-26",
         end_date="2025-05-27",
-        satellites = "SENTINEL-2A",
+        satellites = "SENTINEL-2A, ISS (ZARYA)",
         output_format='json',    
     )
     print(df)
