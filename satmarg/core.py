@@ -142,14 +142,14 @@ def format_output(df, output_format, csv_filename=None):
     else:
         raise ValueError("Invalid output_format. Choose 'table', 'json', or 'csv'.")
 
-# hard coded values based on the swath. They are probably the best values, but can be changed based on the need. 
+# hard coded values based on the swath. They are the tentative reduced values, but can be changed based on the need. 
 SAFE_NADIR_DEG = {
-    "LANDSAT 8": 0.7,
-    "LANDSAT 9": 0.7,
-    "SENTINEL-2A": 1.0,
-    "SENTINEL-2B": 1.0,
-    "SENTINEL-3A": 5.0,
-    "SENTINEL-3B": 5.0,
+    "LANDSAT 8": 0.7,     #half-swath: ~0.83° #reduced for test: 0.7
+    "LANDSAT 9": 0.7,     #half-swath: ~0.83° #0.7
+    "SENTINEL-2A": 0.5,   #half-swath: ~1.30° #0.8
+    "SENTINEL-2B": 0.5,   #half-swath: ~1.30° #0.8
+    "SENTINEL-3A": 0.5,   #half-swath: ~5.7–6.3° #2.0
+    "SENTINEL-3B": 0.5,   #half-swath: ~5.7–6.3° #2.0
 }
 
 def get_precise_overpasses(
@@ -181,12 +181,24 @@ def get_precise_overpasses(
     for sat in all_satellites:
         if max_angle_deg is None:
             try:
-                final_max_angle_deg = SAFE_NADIR_DEG.get(sat.upper(), 0.7); #if angle not passed use default degrees available
+                final_max_angle_deg = SAFE_NADIR_DEG.get(sat.upper(), 0.5); #if angle not passed use default degrees available
                 # print(f"satellite: {sat} and using max angle: {final_max_angle_deg}")
             except Exception:
                 pass
         else:
-            final_max_angle_deg = max_angle_deg
+            if "," in max_angle_deg:
+                final_max_angle_list = [float(d.strip()) for d in max_angle_deg.split(',')]
+                # print(sat)
+                sat_index = satellite_names.index(sat)
+                # print(sat_index)
+                if len(final_max_angle_list) != len(satellite_names):
+                    print("Sizes of max_angle_deg should match with size of satellites eg. 5 satellites should have 5 max_angle_deg - comma separated")
+                    pass
+                final_max_angle_deg = final_max_angle_list[sat_index]
+            else:
+                final_max_angle_deg = float(max_angle_deg.strip())
+
+        # print(final_max_angle_deg)
         overpasses = find_overpasses(lat, lon, start_date, end_date, sat, all_satellites, step_seconds, final_max_angle_deg)
         all_overpasses.extend(overpasses)
 
@@ -197,12 +209,15 @@ def get_precise_overpasses(
 
 def test_get_precise_overpasses():
     df = get_precise_overpasses(
-        lat=27.7172,   # Kathmandu
-        lon=85.3240,
-        start_date="2025-04-26",
-        end_date="2025-05-27",
-        satellites = "SENTINEL-2A, ISS (ZARYA)",
-        output_format='json',    
+        lat= 47.899167,
+        lon= 17.007472,
+        # lat = 27.700769,
+        # lon = 85.300140,
+        start_date="2025-09-22",
+        end_date="2025-11-22",
+        satellites = "SENTINEL-3A, SENTINEL-3B, LANDSAT 8, LANDSAT 9, ISS (ZARYA)", #single or multiple
+        max_angle_deg = "0.5", #"0.5, 0.5, 0.7, 0.7, 0.5",  #single or multiple but count should match with satellites
+        output_format='csv',    
     )
     print(df)
 

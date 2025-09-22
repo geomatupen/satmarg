@@ -42,7 +42,7 @@ df = get_precise_overpasses(
     end_date="2025-05-27",
     satellites="SENTINEL-2A, SENTINEL-2B, SENTINEL-2C",
     step_seconds=10,   # custom processing speed
-    max_angle_deg=1.0  # custom angle
+    max_angle_deg="1.0, 1.0, 1.0"  # custom angles or simply one angle for all eg. "1.0"
     output_format='json', 
 )
 print(df)
@@ -58,12 +58,12 @@ print(df)
 | `end_date`        | End date in 'YYYY-MM-DD' format.                                             | 30 days later    |
 | `satellites`      | Comma-separated list of satellites (example: "SENTINEL-2A, SENTINEL-2B") - limit 5 satellites. Check supported satellites below.    | SENTINEL-2A, SENTINEL-2B |
 | `step_seconds`    | Step interval for orbit simulation in seconds. Higher = faster but less precise. | 1               |
-| `max_angle_deg`   | Maximum distance (in degrees) from overhead to detect an overpass.           | 0.5              |
+| `max_angle_deg`   | Maximum distance (in degrees) from overhead to detect an overpass.           | "0.5" or comma separated values for each satellites  (example: "0.7, 0.6")             |
 
 Notes:  
 - `step_seconds = 1` for slow (high precision) and requires more processing power reduce it to lower values if it is taking too long,  
-- `step_seconds = 10` for medium,  
-- `step_seconds = 20` for fast (less precision).
+- `step_seconds = 2` for medium,  
+- `step_seconds = 5` for fast (less precision). Or it can be custom steps like 3 or 7
 
 ## Output
 You can control the output format using the output_format parameter. Available options are:
