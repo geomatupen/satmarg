@@ -198,7 +198,7 @@ def get_precise_overpasses(
             else:
                 final_max_angle_deg = float(max_angle_deg.strip())
 
-        # print(final_max_angle_deg)
+        print(f"Getting Overpass for Satellite: {sat}")
         overpasses = find_overpasses(lat, lon, start_date, end_date, sat, all_satellites, step_seconds, final_max_angle_deg)
         all_overpasses.extend(overpasses)
 
