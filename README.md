@@ -40,10 +40,10 @@ df = get_precise_overpasses(
     lon=85.3240,
     start_date="2025-04-26", 
     end_date="2025-05-27", 
+    timezone="Asia/Kathmandu",  #default: "UTC"
     satellites="SENTINEL-2A, SENTINEL-2B, SENTINEL-3A, LANDSAT 8", 
     max_angle_deg="0.7", # one angle for all satellite or custom angles for each eg. "0.7, 0.7, 0.5, 0.7",
     step_seconds=10,   # custom processing speed, default is 1. 
-    timezone="Asia/Kathmandu",  #default: "UTC"
     output_format='json', 
 )
 print(df)
@@ -57,10 +57,10 @@ print(df)
 | `lon`           | Longitude in degrees.                                                                               | Required         |
 | `start_date`    | Start date in 'YYYY-MM-DD' format.  Timezone is specified on the parameter below. If not specified, default: UTC                                                               | Today (UTC)      |
 | `end_date`      | End date in 'YYYY-MM-DD' format.  Timezone is specified on the parameter below. default: UTC                                                                 | 30 days later    |
+| `timezone`      | Optional timezone for local time conversion in IANA format (e.g., "Europe/Vienna"). If invalid, defaults to UTC with a warning. Local Time column is included in output only if timezone ≠ UTC. Check Supported Timezones section below. | "UTC"           |
 | `satellites`    | Comma-separated list of satellites (example: "SENTINEL-2A, SENTINEL-2B") - limit 7 satellites. Check supported satellites section below. | SENTINEL-2A, SENTINEL-2B |
 | `max_angle_deg` | Maximum distance (in degrees) from overhead to detect an overpass.                                  | "0.7" or comma separated values for each satellite (example: "0.5, 0.7, 0.6") |
 | `step_seconds`  | Step interval for orbit simulation in seconds. Higher = faster but less precise.                    | 1               |
-| `timezone`      | Optional timezone for local time conversion in IANA format (e.g., "Europe/Vienna"). If invalid, defaults to UTC with a warning. Local Time column is included in output only if timezone ≠ UTC. Check Supported Timezones section below. | "UTC"           |
 | `output_format` | Format of the returned overpass results. Options: `"json"` (default, returns JSON string), `"table"` (pandas DataFrame), or `"csv"` (saves results to CSV). | "json"          |
 
 Notes:  

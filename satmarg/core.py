@@ -103,7 +103,7 @@ def load_satellites(satellite_names):
     return sats
 
 
-def find_overpasses(lat, lon, start_date, end_date, satellite, satellites, max_angle_deg, step_seconds, timezone):
+def find_overpasses(lat, lon, start_date, end_date, timezone, satellite, satellites, max_angle_deg, step_seconds):
     if satellite not in satellites:
         return []
 
@@ -182,10 +182,10 @@ def get_precise_overpasses(
     lon,
     start_date=None,
     end_date=None,
+    timezone = 'UTC',
     satellites=None,
     max_angle_deg=None,
     step_seconds=1,
-    timezone = 'UTC',
     output_format='json'
 ):
     if start_date is None:
@@ -243,7 +243,7 @@ def get_precise_overpasses(
                 final_max_angle_deg = float(max_angle_deg.strip())
 
         print(f"Getting Overpass for Satellite: {sat}")
-        overpasses = find_overpasses(lat, lon, start_date_utc, end_date_utc, sat, all_satellites, final_max_angle_deg, step_seconds, timezone)
+        overpasses = find_overpasses(lat, lon, start_date_utc, end_date_utc, timezone, sat, all_satellites, final_max_angle_deg, step_seconds)
         all_overpasses.extend(overpasses)
 
     df = pd.DataFrame(all_overpasses)
@@ -259,11 +259,11 @@ def test_get_precise_overpasses():
         lon = 85.300140,
         start_date="2026-01-01",
         end_date="2026-02-01",
+        timezone="Asia/Kathmandu",
         satellites = "SENTINEL-2B",
         # satellites = "SENTINEL-2B, SENTINEL-2C, SENTINEL-3A, SENTINEL-3B, LANDSAT 8, LANDSAT 9, ISS (ZARYA)", #single or multiple
         max_angle_deg = "0.7", # or "0.7, 0.7, 0.5, 0.5, 0.7, 0.7, 0.5",  #single (same for all) or multiple (count should match with no. of satellites)
         step_seconds=10,
-        timezone="Asia/Kathmandu",
         output_format='json',    
     )
     print(df)
