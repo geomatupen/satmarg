@@ -4,10 +4,10 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "satmarg"
-version = "0.2.7"
+version = "0.2.8"
 description = "Predict satellite overpasses based on TLE and user location"
 readme = "README.md"
-authors = [{ name = "Upendra Oli", email = "upendra.oli59@gmail.com, upendra@naxa.com.np" }]
+authors = [{ name = "Upendra Oli", email = "upendra.oli59@gmail.com" }]
 license = "GPL-3.0-or-later"
 dependencies = [
     "skyfield",    # for satellite calculation and orbit predictions
