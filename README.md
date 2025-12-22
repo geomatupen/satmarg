@@ -38,13 +38,13 @@ print(df)
 df = get_precise_overpasses(
     lat=27.7172,
     lon=85.3240,
-    start_date="2025-04-26", #default: today
-    end_date="2025-05-27", # default: is 1 month after today
-    satellites="SENTINEL-2A, SENTINEL-2B, SENTINEL-3A, LANDSAT 8",  #default: ["SENTINEL-2A", "SENTINEL-2B", "LANDSAT 8", "LANDSAT 9"]
-    max_angle_deg="0.7", # one angle for all satellite or custom angles for each eg. "0.7, 0.7, 0.5, 0.7", default: "0.7"
-    step_seconds=10,   # custom processing speed, default is 1. , default: 10
+    start_date="2025-04-26", 
+    end_date="2025-05-27", 
+    satellites="SENTINEL-2A, SENTINEL-2B, SENTINEL-3A, LANDSAT 8", 
+    max_angle_deg="0.7", # one angle for all satellite or custom angles for each eg. "0.7, 0.7, 0.5, 0.7",
+    step_seconds=10,   # custom processing speed, default is 1. 
     timezone="Asia/Kathmandu",  #default: "UTC"
-    output_format='json',   #default: "json"
+    output_format='json', 
 )
 print(df)
 ```
