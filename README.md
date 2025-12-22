@@ -55,7 +55,7 @@ print(df)
 |-----------------|-----------------------------------------------------------------------------------------------------|-----------------|
 | `lat`           | Latitude in degrees.                                                                                | Required         |
 | `lon`           | Longitude in degrees.                                                                               | Required         |
-| `start_date`    | Start date in 'YYYY-MM-DD' format.  Timezone is specified on the parameter below. If not specified, default: UTC                                                               | Today (UTC)      |
+| `start_date`    | Start date in 'YYYY-MM-DD' format.  Timezone is specified on the parameter below. If not specified, default: UTC                                                               | Today     |
 | `end_date`      | End date in 'YYYY-MM-DD' format.  Timezone is specified on the parameter below. default: UTC                                                                 | 30 days later    |
 | `timezone`      | Optional timezone for local time conversion in IANA format (e.g., "Europe/Vienna"). If invalid, defaults to UTC with a warning. Local Time column is included in output only if timezone ≠ UTC. Check Supported Timezones section below. | "UTC"           |
 | `satellites`    | Comma-separated list of satellites (example: "SENTINEL-2A, SENTINEL-2B") - limit 7 satellites. Check supported satellites section below. | SENTINEL-2A, SENTINEL-2B |
@@ -124,7 +124,7 @@ json [
 - and more available on https://celestrak.org/NORAD/elements/resource.txt, https://celestrak.org/NORAD/elements/stations.txt
 
 ## Supported Timezones
-- These are the valid timezones: https://github.com/geomatupen/satmarg/blob/upen/Example/valid_timezones/valid_timezones.csv 
+- These are the valid timezones: https://raw.githubusercontent.com/geomatupen/satmarg/refs/heads/upen/Example/valid_timezones/valid_timezones.csv
 
 ## License
 
