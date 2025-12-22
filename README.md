@@ -55,8 +55,8 @@ print(df)
 |-----------------|-----------------------------------------------------------------------------------------------------|-----------------|
 | `lat`           | Latitude in degrees.                                                                                | Required         |
 | `lon`           | Longitude in degrees.                                                                               | Required         |
-| `start_date`    | Start date in 'YYYY-MM-DD' format.                                                                 | Today (UTC)      |
-| `end_date`      | End date in 'YYYY-MM-DD' format.                                                                   | 30 days later    |
+| `start_date`    | Start date in 'YYYY-MM-DD' format.  Timezone is specified on the parameter below. If not specified, default: UTC                                                               | Today (UTC)      |
+| `end_date`      | End date in 'YYYY-MM-DD' format.  Timezone is specified on the parameter below. default: UTC                                                                 | 30 days later    |
 | `satellites`    | Comma-separated list of satellites (example: "SENTINEL-2A, SENTINEL-2B") - limit 7 satellites. Check supported satellites section below. | SENTINEL-2A, SENTINEL-2B |
 | `max_angle_deg` | Maximum distance (in degrees) from overhead to detect an overpass.                                  | "0.7" or comma separated values for each satellite (example: "0.5, 0.7, 0.6") |
 | `step_seconds`  | Step interval for orbit simulation in seconds. Higher = faster but less precise.                    | 1               |
@@ -67,6 +67,7 @@ Notes:
 - `step_seconds = 1` for slow (high precision) and requires more processing power reduce it to lower values if it is taking too long,  
 - `step_seconds = 2` for medium,  
 - `step_seconds = 5` for fast (less precision). Or it can be custom steps like 3 or 7
+- `Timezone`: When timezone is set, all the input and output dates are in user-defined time zone. "
 
 ## Output
 You can control the output format using the output_format parameter. Available options are:
@@ -81,8 +82,7 @@ You can control the output format using the output_format parameter. Available o
 ```
 json [
   {
-    "UTC Time":"2026-01-02T16:31:24+00:00",
-    "Local Time":"2026-01-02T22:16:24+05:45",
+    "Date":"2026-01-02T22:16:24+05:45",
     "Timezone":"Asia\/Kathmandu",
     "Satellite":"SENTINEL-2B",
     "Lat (DEG)":27.6861089603,
@@ -92,8 +92,7 @@ json [
     "Range (km)":791.8631112307
   },
   {
-    "UTC Time":"2026-01-12T16:31:27+00:00",
-    "Local Time":"2026-01-12T22:16:27+05:45",
+    "Date":"2026-01-12T22:16:27+05:45",
     "Timezone":"Asia\/Kathmandu",
     "Satellite":"SENTINEL-2B",
     "Lat (DEG)":27.6401258516,
@@ -107,9 +106,9 @@ json [
 
 ## Example Output (Table)
 
-| UTC Time                | Local Time                | Timezone        | Satellite    | Lat (DEG)   | Lon (DEG)   | Sat. Azi. (deg) | Sat. Elev. (deg) | Range (km) |
-|-------------------------|--------------------------|----------------|--------------|------------|------------|-----------------|-----------------|------------|
-| 2026-01-02T16:31:24+00:00 | 2026-01-02T22:16:24+05:45 | Asia/Kathmandu | SENTINEL-2B  | 27.686109  | 85.151102  | 263.725042      | 88.796990       | 791.863111 |
+| Date               | Timezone        | Satellite    | Lat (DEG)   | Lon (DEG)   | Sat. Azi. (deg) | Sat. Elev. (deg) | Range (km) |
+|--------------------------|----------------|--------------|------------|------------|-----------------|-----------------|------------|
+| 2026-01-02T22:16:24+05:45 | Asia/Kathmandu | SENTINEL-2B  | 27.686109  | 85.151102  | 263.725042      | 88.796990       | 791.863111 |
 
 
 ## Supported Satellites

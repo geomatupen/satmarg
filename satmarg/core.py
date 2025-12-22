@@ -34,6 +34,13 @@ def utc_to_local(utc_dt: datetime, timezone_str: str) -> datetime:
         utc_dt = utc_dt.replace(tzinfo=ZoneInfo("UTC"))
     return utc_dt.astimezone(ZoneInfo(timezone_str))
 
+def local_to_utc(local_date_str: str, timezone_str: str) -> datetime:
+    """Convert a local date string 'YYYY-MM-DD' to UTC datetime at midnight."""
+    local_dt = datetime.strptime(local_date_str, "%Y-%m-%d")
+    local_dt = local_dt.replace(tzinfo=ZoneInfo(timezone_str))
+    return local_dt.astimezone(ZoneInfo("UTC"))
+
+
 def load_tle_cache():
     if os.path.exists(TLE_CACHE_FILE):
         with open(TLE_CACHE_FILE, 'r') as f:
@@ -125,11 +132,11 @@ def find_overpasses(lat, lon, start_date, end_date, satellite, satellites, max_a
 
         if distances[min_index] < max_angle_deg:
             columns = OrderedDict()
-            columns['UTC Time'] = utc_time.replace(tzinfo=ZoneInfo("UTC")).isoformat()
-
             # Insert Local Time only if timezone is not UTC
-            if timezone != "UTC":
-                columns['Local Time'] = local_time.isoformat()
+            if timezone == "UTC":
+                columns['Date'] = utc_time.replace(tzinfo=ZoneInfo("UTC")).isoformat()
+            else:
+                columns['Date'] = local_time.isoformat()
 
             columns['Timezone'] = timezone
             columns['Satellite'] = satellite
@@ -186,6 +193,14 @@ def get_precise_overpasses(
     if end_date is None:
         end_date = (datetime.utcnow() + timedelta(days=30)).strftime('%Y-%m-%d')
 
+    # --- NEW: convert local dates to UTC ---
+    if timezone != "UTC":
+        start_date_utc = local_to_utc(start_date, timezone).strftime('%Y-%m-%d')
+        end_date_utc = local_to_utc(end_date, timezone).strftime('%Y-%m-%d')
+    else:
+        start_date_utc = start_date
+        end_date_utc = end_date
+
     if lat is None or lon is None:
         raise ValueError("Latitude and Longitude must be provided.")
 
@@ -228,7 +243,7 @@ def get_precise_overpasses(
                 final_max_angle_deg = float(max_angle_deg.strip())
 
         print(f"Getting Overpass for Satellite: {sat}")
-        overpasses = find_overpasses(lat, lon, start_date, end_date, sat, all_satellites, final_max_angle_deg, step_seconds, timezone)
+        overpasses = find_overpasses(lat, lon, start_date_utc, end_date_utc, sat, all_satellites, final_max_angle_deg, step_seconds, timezone)
         all_overpasses.extend(overpasses)
 
     df = pd.DataFrame(all_overpasses)
@@ -244,7 +259,8 @@ def test_get_precise_overpasses():
         lon = 85.300140,
         start_date="2026-01-01",
         end_date="2026-02-01",
-        satellites = "SENTINEL-2B, SENTINEL-2C, SENTINEL-3A, SENTINEL-3B, LANDSAT 8, LANDSAT 9, ISS (ZARYA)", #single or multiple
+        satellites = "SENTINEL-2B",
+        # satellites = "SENTINEL-2B, SENTINEL-2C, SENTINEL-3A, SENTINEL-3B, LANDSAT 8, LANDSAT 9, ISS (ZARYA)", #single or multiple
         max_angle_deg = "0.7", # or "0.7, 0.7, 0.5, 0.5, 0.7, 0.7, 0.5",  #single (same for all) or multiple (count should match with no. of satellites)
         step_seconds=10,
         timezone="Asia/Kathmandu",
