@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "satmarg"
-version = "0.3.1"
+version = "0.3.2"
 description = "Predict satellite overpasses based on TLE and user location"
 readme = "README.md"
 authors = [{ name = "Upendra Oli", email = "upendra.oli59@gmail.com" }]
