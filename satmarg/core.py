@@ -8,6 +8,9 @@ import pandas as pd
 import requests
 import os
 import json
+from zoneinfo import ZoneInfo
+from datetime import datetime
+from collections import OrderedDict
 
 # Constants and global cache
 _fetched_cache = {}
@@ -25,6 +28,11 @@ custom_tle_sources = {
         "2 60989  98.5659 167.0180 0001050  95.0731 265.0572 14.30814009 29727"
     ]
 }
+
+def utc_to_local(utc_dt: datetime, timezone_str: str) -> datetime:
+    if utc_dt.tzinfo is None:
+        utc_dt = utc_dt.replace(tzinfo=ZoneInfo("UTC"))
+    return utc_dt.astimezone(ZoneInfo(timezone_str))
 
 def load_tle_cache():
     if os.path.exists(TLE_CACHE_FILE):
@@ -57,9 +65,9 @@ def fetch_tle_text(name, url):
 def load_satellites(satellite_names):
     sats = {}
 
-    if len(satellite_names) > 5:
-        print(f" Too many satellites requested ({len(satellite_names)}). Limiting to first 5.")
-        satellite_names = satellite_names[:5]
+    if len(satellite_names) > 7:
+        print(f" Too many satellites requested ({len(satellite_names)}). Limiting to first 7.")
+        satellite_names = satellite_names[:7]
 
     for name in satellite_names:
         tle = None
@@ -88,7 +96,7 @@ def load_satellites(satellite_names):
     return sats
 
 
-def find_overpasses(lat, lon, start_date, end_date, satellite, satellites, step_seconds, max_angle_deg):
+def find_overpasses(lat, lon, start_date, end_date, satellite, satellites, max_angle_deg, step_seconds, timezone):
     if satellite not in satellites:
         return []
 
@@ -107,21 +115,31 @@ def find_overpasses(lat, lon, start_date, end_date, satellite, satellites, step_
         longitudes = subpoint.longitude.degrees
         distances = np.sqrt((latitudes - lat)**2 + (longitudes - lon)**2)
         min_index = np.argmin(distances)
-        closest_time = t[min_index].utc_datetime()
+        utc_time = t[min_index].utc_datetime()
+        # Only convert if user wants a timezone other than UTC
+        if timezone != "UTC":
+            local_time = utc_to_local(utc_time, timezone)
 
         topocentric = (sat - observer).at(t[min_index])
         alt, az, distance = topocentric.altaz()
 
         if distances[min_index] < max_angle_deg:
-            results.append({
-                'date': closest_time.strftime('%Y-%m-%d %H:%M:%S'),
-                'Satellite': satellite,
-                'Lat (DEG)': latitudes[min_index],
-                'Lon (DEG)': longitudes[min_index],
-                'Sat. Azi. (deg)': az.degrees,
-                'Sat. Elev. (deg)': alt.degrees,
-                'Range (km)': distance.km
-            })
+            columns = OrderedDict()
+            columns['UTC Time'] = utc_time.replace(tzinfo=ZoneInfo("UTC")).isoformat()
+
+            # Insert Local Time only if timezone is not UTC
+            if timezone != "UTC":
+                columns['Local Time'] = local_time.isoformat()
+
+            columns['Timezone'] = timezone
+            columns['Satellite'] = satellite
+            columns['Lat (DEG)'] = latitudes[min_index]
+            columns['Lon (DEG)'] = longitudes[min_index]
+            columns['Sat. Azi. (deg)'] = az.degrees
+            columns['Sat. Elev. (deg)'] = alt.degrees
+            columns['Range (km)'] = distance.km
+
+            results.append(columns)
 
         dt += timedelta(days=1)
 
@@ -158,8 +176,9 @@ def get_precise_overpasses(
     start_date=None,
     end_date=None,
     satellites=None,
-    step_seconds=1,
     max_angle_deg=None,
+    step_seconds=1,
+    timezone = 'UTC',
     output_format='json'
 ):
     if start_date is None:
@@ -174,6 +193,16 @@ def get_precise_overpasses(
         satellite_names = ["SENTINEL-2A", "SENTINEL-2B", "LANDSAT 8", "LANDSAT 9"]
     else:
         satellite_names = [s.strip() for s in satellites.split(',')]
+
+    # Validate timezone once, Only validate if user passed a timezone different from default
+    if timezone != "UTC":
+        valid_timezones = sorted(available_timezones())
+        if timezone not in valid_timezones:
+            print(
+                f"Warning: Invalid timezone '{timezone}'. Defaulting to UTC.\n"
+                f"Valid timezones include: {', '.join(valid_timezones)}"
+            )
+            timezone = "UTC"
 
     all_satellites = load_satellites(satellite_names)
     all_overpasses = []
@@ -192,14 +221,14 @@ def get_precise_overpasses(
                 sat_index = satellite_names.index(sat)
                 # print(sat_index)
                 if len(final_max_angle_list) != len(satellite_names):
-                    print("Sizes of max_angle_deg should match with size of satellites eg. 5 satellites should have 5 max_angle_deg - comma separated")
+                    print("Sizes of max_angle_deg should match with size of satellites eg. 7 satellites should have 7 max_angle_deg - comma separated")
                     pass
                 final_max_angle_deg = final_max_angle_list[sat_index]
             else:
                 final_max_angle_deg = float(max_angle_deg.strip())
 
         print(f"Getting Overpass for Satellite: {sat}")
-        overpasses = find_overpasses(lat, lon, start_date, end_date, sat, all_satellites, step_seconds, final_max_angle_deg)
+        overpasses = find_overpasses(lat, lon, start_date, end_date, sat, all_satellites, final_max_angle_deg, step_seconds, timezone)
         all_overpasses.extend(overpasses)
 
     df = pd.DataFrame(all_overpasses)
@@ -209,15 +238,17 @@ def get_precise_overpasses(
 
 def test_get_precise_overpasses():
     df = get_precise_overpasses(
-        lat= 47.899167,
-        lon= 17.007472,
-        # lat = 27.700769,
-        # lon = 85.300140,
-        start_date="2025-09-22",
-        end_date="2025-11-22",
-        satellites = "SENTINEL-3A, SENTINEL-3B, LANDSAT 8, LANDSAT 9, ISS (ZARYA)", #single or multiple
-        max_angle_deg = "0.5", #"0.5, 0.5, 0.7, 0.7, 0.5",  #single or multiple but count should match with satellites
-        output_format='csv',    
+        # lat= 47.899167,
+        # lon= 17.007472,
+        lat = 27.700769,
+        lon = 85.300140,
+        start_date="2026-01-01",
+        end_date="2026-02-01",
+        satellites = "SENTINEL-2B, SENTINEL-2C, SENTINEL-3A, SENTINEL-3B, LANDSAT 8, LANDSAT 9, ISS (ZARYA)", #single or multiple
+        max_angle_deg = "0.7", # or "0.7, 0.7, 0.5, 0.5, 0.7, 0.7, 0.5",  #single (same for all) or multiple (count should match with no. of satellites)
+        step_seconds=10,
+        timezone="Asia/Kathmandu",
+        output_format='json',    
     )
     print(df)
 

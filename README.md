@@ -38,27 +38,30 @@ print(df)
 df = get_precise_overpasses(
     lat=27.7172,
     lon=85.3240,
-    start_date="2025-04-26",
-    end_date="2025-05-27",
-    satellites="SENTINEL-2A, SENTINEL-2B, SENTINEL-2C",
-    step_seconds=10,   # custom processing speed
-    max_angle_deg="1.0, 1.0, 1.0"  # custom angles or simply one angle for all eg. "1.0"
-    output_format='json', 
+    start_date="2025-04-26", #default: today
+    end_date="2025-05-27", # default: is 1 month after today
+    satellites="SENTINEL-2A, SENTINEL-2B, SENTINEL-3A, LANDSAT 8",  #default: ["SENTINEL-2A", "SENTINEL-2B", "LANDSAT 8", "LANDSAT 9"]
+    max_angle_deg="0.7", # one angle for all satellite or custom angles for each eg. "0.7, 0.7, 0.5, 0.7", default: "0.7"
+    step_seconds=10,   # custom processing speed, default is 1. , default: 10
+    timezone="Asia/Kathmandu",  #default: "UTC"
+    output_format='json',   #default: "json"
 )
 print(df)
 ```
 
 ## Parameters
 
-| Parameter         | Description                                                                 | Default          |
-| ----------------- | --------------------------------------------------------------------------- | ---------------- |
-| `lat`             | Latitude in degrees.                                                        | Required         |
-| `lon`             | Longitude in degrees.                                                       | Required         |
-| `start_date`      | Start date in 'YYYY-MM-DD' format.                                           | Today (UTC)      |
-| `end_date`        | End date in 'YYYY-MM-DD' format.                                             | 30 days later    |
-| `satellites`      | Comma-separated list of satellites (example: "SENTINEL-2A, SENTINEL-2B") - limit 5 satellites. Check supported satellites below.    | SENTINEL-2A, SENTINEL-2B |
-| `step_seconds`    | Step interval for orbit simulation in seconds. Higher = faster but less precise. | 1               |
-| `max_angle_deg`   | Maximum distance (in degrees) from overhead to detect an overpass.           | "0.5" or comma separated values for each satellites  (example: "0.7, 0.6")             |
+| Parameter       | Description                                                                                         | Default          |
+|-----------------|-----------------------------------------------------------------------------------------------------|-----------------|
+| `lat`           | Latitude in degrees.                                                                                | Required         |
+| `lon`           | Longitude in degrees.                                                                               | Required         |
+| `start_date`    | Start date in 'YYYY-MM-DD' format.                                                                 | Today (UTC)      |
+| `end_date`      | End date in 'YYYY-MM-DD' format.                                                                   | 30 days later    |
+| `satellites`    | Comma-separated list of satellites (example: "SENTINEL-2A, SENTINEL-2B") - limit 7 satellites. Check supported satellites section below. | SENTINEL-2A, SENTINEL-2B |
+| `max_angle_deg` | Maximum distance (in degrees) from overhead to detect an overpass.                                  | "0.7" or comma separated values for each satellite (example: "0.5, 0.7, 0.6") |
+| `step_seconds`  | Step interval for orbit simulation in seconds. Higher = faster but less precise.                    | 1               |
+| `timezone`      | Optional timezone for local time conversion in IANA format (e.g., "Europe/Vienna"). If invalid, defaults to UTC with a warning. Local Time column is included in output only if timezone ≠ UTC. Check Supported Timezones section below. | "UTC"           |
+| `output_format` | Format of the returned overpass results. Options: `"json"` (default, returns JSON string), `"table"` (pandas DataFrame), or `"csv"` (saves results to CSV). | "json"          |
 
 Notes:  
 - `step_seconds = 1` for slow (high precision) and requires more processing power reduce it to lower values if it is taking too long,  
@@ -78,40 +81,47 @@ You can control the output format using the output_format parameter. Available o
 ```
 json [
   {
-    "date":"2025-05-04 16:31:35",
-    "Satellite":"SENTINEL-2A",
-    "Lat (DEG)":27.6669294714,
-    "Lon (DEG)":85.1651872363,
-    "Sat. Azi. (deg)":250.4505871228,
-    "Sat. Elev. (deg)":88.6478414389,
-    "Range (km)":792.0432268716
+    "UTC Time":"2026-01-02T16:31:24+00:00",
+    "Local Time":"2026-01-02T22:16:24+05:45",
+    "Timezone":"Asia\/Kathmandu",
+    "Satellite":"SENTINEL-2B",
+    "Lat (DEG)":27.6861089603,
+    "Lon (DEG)":85.1511018967,
+    "Sat. Azi. (deg)":263.7250417017,
+    "Sat. Elev. (deg)":88.7969902437,
+    "Range (km)":791.8631112307
   },
   {
-    "date":"2025-05-14 16:31:30",
-    "Satellite":"SENTINEL-2A",
-    "Lat (DEG)":27.6775444246,
-    "Lon (DEG)":85.1847272958,
-    "Sat. Azi. (deg)":252.283651294,
-    "Sat. Elev. (deg)":88.82670104,
-    "Range (km)":791.7672395546
+    "UTC Time":"2026-01-12T16:31:27+00:00",
+    "Local Time":"2026-01-12T22:16:27+05:45",
+    "Timezone":"Asia\/Kathmandu",
+    "Satellite":"SENTINEL-2B",
+    "Lat (DEG)":27.6401258516,
+    "Lon (DEG)":85.1484809155,
+    "Sat. Azi. (deg)":245.8365823306,
+    "Sat. Elev. (deg)":88.665605964,
+    "Range (km)":791.7747502366
   },
   {
-    "date":"2025-05-24 16:31:21",
-    "Satellite":"SENTINEL-2A",
-    "Lat (DEG)":27.6959514525,
-    "Lon (DEG)":85.2195412997,
-    "Sat. Azi. (deg)":257.1430638378,
-    "Sat. Elev. (deg)":89.1402328607,
-    "Range (km)":791.6648527357
+    "UTC Time":"2026-01-22T16:31:32+00:00",
+    "Local Time":"2026-01-22T22:16:32+05:45",
+    "Timezone":"Asia\/Kathmandu",
+    "Satellite":"SENTINEL-2B",
+    "Lat (DEG)":27.6650228057,
+    "Lon (DEG)":85.1238976561,
+    "Sat. Azi. (deg)":257.1986637622,
+    "Sat. Elev. (deg)":88.5496491347,
+    "Range (km)":791.9120255826
   }
 ]
 ```
 
 ## Example Output (Table)
 
-| date                | Satellite    | Lat (DEG) | Lon (DEG) | Sat. Azi. (deg) | Sat. Elev. (deg) | Range (km) |
-|---------------------|--------------|-----------|-----------|-----------------|-----------------|------------|
-| 2025-04-27 05:14:11  | SENTINEL-2A  | 27.72     | 85.32     | 199.3           | 82.1             | 702.8      |
+| UTC Time                | Local Time                | Timezone        | Satellite    | Lat (DEG)   | Lon (DEG)   | Sat. Azi. (deg) | Sat. Elev. (deg) | Range (km) |
+|-------------------------|--------------------------|----------------|--------------|------------|------------|-----------------|-----------------|------------|
+| 2026-01-02T16:31:24+00:00 | 2026-01-02T22:16:24+05:45 | Asia/Kathmandu | SENTINEL-2B  | 27.686109  | 85.151102  | 263.725042      | 88.796990       | 791.863111 |
+
 
 ## Supported Satellites
 
@@ -124,6 +134,9 @@ json [
 - SENTINEL-3B
 - ISS (ZARYA)
 - and more available on https://celestrak.org/NORAD/elements/resource.txt, https://celestrak.org/NORAD/elements/stations.txt
+
+## Supported Timezones
+- These are the supported timezones: 
 
 ## License
 
