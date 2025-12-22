@@ -8,7 +8,7 @@ import pandas as pd
 import requests
 import os
 import json
-from zoneinfo import ZoneInfo
+from zoneinfo import ZoneInfo, available_timezones
 from datetime import datetime
 from collections import OrderedDict
 
@@ -182,7 +182,7 @@ def get_precise_overpasses(
     lon,
     start_date=None,
     end_date=None,
-    timezone = 'UTC',
+    timezone='UTC',
     satellites=None,
     max_angle_deg=None,
     step_seconds=1,
