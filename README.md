@@ -101,17 +101,6 @@ json [
     "Sat. Azi. (deg)":245.8365823306,
     "Sat. Elev. (deg)":88.665605964,
     "Range (km)":791.7747502366
-  },
-  {
-    "UTC Time":"2026-01-22T16:31:32+00:00",
-    "Local Time":"2026-01-22T22:16:32+05:45",
-    "Timezone":"Asia\/Kathmandu",
-    "Satellite":"SENTINEL-2B",
-    "Lat (DEG)":27.6650228057,
-    "Lon (DEG)":85.1238976561,
-    "Sat. Azi. (deg)":257.1986637622,
-    "Sat. Elev. (deg)":88.5496491347,
-    "Range (km)":791.9120255826
   }
 ]
 ```
@@ -136,7 +125,7 @@ json [
 - and more available on https://celestrak.org/NORAD/elements/resource.txt, https://celestrak.org/NORAD/elements/stations.txt
 
 ## Supported Timezones
-- These are the supported timezones: 
+- These are the valid timezones: https://github.com/geomatupen/satmarg/blob/upen/Example/valid_timezones/valid_timezones.csv 
 
 ## License
 
